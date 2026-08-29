@@ -1,0 +1,15 @@
+{
+  "name": "reachinbox-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ReachInbox Outbound Cold Email Platform",
+  "scripts": {
+    "dev:frontend": "npm run dev --prefix reachinbox/frontend",
+    "dev:backend": "npm run dev --prefix reachinbox/backend",
+    "worker:backend": "npm run worker --prefix reachinbox/backend",
+    "start:worker": "npm run start:worker --prefix reachinbox/backend",
+    "build:frontend": "npm run build --prefix reachinbox/frontend",
+    "build:backend": "npm run build --prefix reachinbox/backend",
+    "typecheck:frontend": "npm run typecheck --prefix reachinbox/frontend"
+  }
+}
