@@ -3,9 +3,19 @@ import { prisma } from '../config/prisma';
 
 const frontendUrl = process.env.FRONTEND_URL || 'https://outbox-assesment.vercel.app';
 
+const getSlackRedirectUri = (): string => {
+  if (process.env.SLACK_REDIRECT_URI && process.env.SLACK_REDIRECT_URI.includes('onrender.com')) {
+    return process.env.SLACK_REDIRECT_URI;
+  }
+  if (process.env.NODE_ENV === 'production' || process.env.RENDER || process.env.FRONTEND_URL?.includes('vercel.app')) {
+    return 'https://reachinbox-backend-api-tceq.onrender.com/auth/slack/callback';
+  }
+  return process.env.SLACK_REDIRECT_URI || 'http://localhost:5000/auth/slack/callback';
+};
+
 export const initiateSlackOAuth = (_req: Request, res: Response): void => {
   const clientId = process.env.SLACK_CLIENT_ID;
-  const redirectUri = process.env.SLACK_REDIRECT_URI || 'https://reachinbox-backend-api-tceq.onrender.com/auth/slack/callback';
+  const redirectUri = getSlackRedirectUri();
 
   if (!clientId || clientId === 'PASTE_SLACK_CLIENT_ID' || clientId === 'your_slack_client_id') {
     res.json({
@@ -25,7 +35,7 @@ export const handleSlackCallback = async (req: Request, res: Response): Promise<
   const { code } = req.query;
   const clientId = process.env.SLACK_CLIENT_ID;
   const clientSecret = process.env.SLACK_CLIENT_SECRET;
-  const redirectUri = process.env.SLACK_REDIRECT_URI || 'https://reachinbox-backend-api-tceq.onrender.com/auth/slack/callback';
+  const redirectUri = getSlackRedirectUri();
   const userId = (req.session as any)?.user?.id || 'usr_demo_123';
 
   if (!code || typeof code !== 'string' || !clientId || !clientSecret) {
