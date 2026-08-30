@@ -25,7 +25,7 @@ import { errorHandler } from './middleware/errorHandler';
 
 export const app: Express = express();
 
-const frontendUrl = process.env.FRONTEND_URL || 'https://outbox-assesment.vercel.app';
+const frontendUrl = (process.env.FRONTEND_URL || 'https://outbox-assesment.vercel.app').replace(/\/+$/, '');
 
 // Required for Render/Vercel HTTPS reverse proxy to set secure cookies properly
 app.set('trust proxy', 1);

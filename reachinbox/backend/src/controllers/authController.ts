@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../config/prisma';
 
-const frontendUrl = process.env.FRONTEND_URL || 'https://outbox-assesment.vercel.app';
+const frontendUrl = (process.env.FRONTEND_URL || 'https://outbox-assesment.vercel.app').replace(/\/+$/, '');
 
 const getGoogleRedirectUri = (): string => {
   if (process.env.NODE_ENV === 'development' && !process.env.RENDER && (!process.env.FRONTEND_URL || process.env.FRONTEND_URL.includes('localhost'))) {
