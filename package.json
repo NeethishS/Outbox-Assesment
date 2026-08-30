@@ -4,6 +4,7 @@
   "private": true,
   "description": "ReachInbox Outbound Cold Email Platform",
   "scripts": {
+    "build": "cd reachinbox/frontend && npm install && npm run build",
     "dev:frontend": "npm run dev --prefix reachinbox/frontend",
     "dev:backend": "npm run dev --prefix reachinbox/backend",
     "worker:backend": "npm run worker --prefix reachinbox/backend",

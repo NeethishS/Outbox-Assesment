@@ -1,6 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "npm run build --prefix reachinbox/frontend",
+  "installCommand": "cd reachinbox/frontend && npm install",
+  "buildCommand": "cd reachinbox/frontend && npm run build",
   "outputDirectory": "reachinbox/frontend/dist",
   "framework": "vite",
   "rewrites": [
