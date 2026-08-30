@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "worker": "ts-node-dev --respawn --transpile-only src/workers/emailWorker.ts",
-    "build": "tsc && npx prisma generate",
+    "build": "tsc && npx prisma generate && npx prisma db push",
     "start": "node dist/server.js",
     "start:worker": "node dist/workers/emailWorker.js",
     "db:generate": "prisma generate",
