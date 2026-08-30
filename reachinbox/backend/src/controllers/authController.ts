@@ -4,13 +4,10 @@ import { prisma } from '../config/prisma';
 const frontendUrl = process.env.FRONTEND_URL || 'https://outbox-assesment.vercel.app';
 
 const getGoogleRedirectUri = (): string => {
-  if (process.env.GOOGLE_CALLBACK_URL && process.env.GOOGLE_CALLBACK_URL.includes('onrender.com')) {
-    return process.env.GOOGLE_CALLBACK_URL;
+  if (process.env.NODE_ENV === 'development' && !process.env.RENDER && (!process.env.FRONTEND_URL || process.env.FRONTEND_URL.includes('localhost'))) {
+    return process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5000/auth/google/callback';
   }
-  if (process.env.NODE_ENV === 'production' || process.env.RENDER || process.env.FRONTEND_URL?.includes('vercel.app')) {
-    return 'https://reachinbox-backend-api-tceq.onrender.com/auth/google/callback';
-  }
-  return process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5000/auth/google/callback';
+  return 'https://reachinbox-backend-api-tceq.onrender.com/auth/google/callback';
 };
 
 export const initiateGoogleOAuth = async (_req: Request, res: Response): Promise<void> => {
