@@ -25,10 +25,24 @@ import { errorHandler } from './middleware/errorHandler';
 
 export const app: Express = express();
 
-const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+const frontendUrl = process.env.FRONTEND_URL || 'https://outbox-assesment.vercel.app';
+
+// Required for Render/Vercel HTTPS reverse proxy to set secure cookies properly
+app.set('trust proxy', 1);
 
 app.use(cors({
-  origin: [frontendUrl, 'http://localhost:5173', 'http://127.0.0.1:5173'],
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (
+      origin.includes('localhost') ||
+      origin.includes('127.0.0.1') ||
+      origin.includes('vercel.app') ||
+      origin === frontendUrl
+    ) {
+      return callback(null, true);
+    }
+    callback(null, true);
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -42,8 +56,10 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'reachinbox_secret_key_123',
   resave: false,
   saveUninitialized: false,
+  proxy: true,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000
   }
@@ -62,7 +78,7 @@ createBullBoard({
 
 app.use('/admin/queues', serverAdapter.getRouter());
 
-// Phase 1: Health Endpoint (GET /health & GET /api/health)
+// Health Endpoint (GET /health & GET /api/health)
 async function getHealthStatus(_req: Request, res: Response): Promise<void> {
   let dbStatus = 'disconnected';
   let redisStatus = 'disconnected';
