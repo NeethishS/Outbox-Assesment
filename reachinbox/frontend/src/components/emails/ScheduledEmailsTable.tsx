@@ -87,10 +87,17 @@ export function ScheduledEmailsTable({
           <tbody className="divide-y divide-[#E5E7EB]">
             {emails.map(email => {
               const timeStr = email.scheduledTime || email.scheduledAt || '';
-              const displayDate = timeStr ? new Date(timeStr).toLocaleString([], {
-                dateStyle: 'medium',
-                timeStyle: 'short'
-              }) : 'Pending';
+              let displayDate = 'Pending';
+              if (timeStr) {
+                try {
+                  const d = new Date(timeStr);
+                  if (!isNaN(d.getTime())) {
+                    displayDate = d.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+                  }
+                } catch {
+                  displayDate = 'Pending';
+                }
+              }
 
               return (
                 <tr key={email.id} className="hover:bg-[#FCFCFC] transition-colors">

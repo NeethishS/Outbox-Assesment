@@ -84,10 +84,17 @@ export function SentEmailsTable({
           <tbody className="divide-y divide-[#E5E7EB]">
             {emails.map(email => {
               const timeStr = email.sentTime || email.sentAt || '';
-              const displayDate = timeStr ? new Date(timeStr).toLocaleString([], {
-                dateStyle: 'medium',
-                timeStyle: 'short'
-              }) : 'Completed';
+              let displayDate = 'Completed';
+              if (timeStr) {
+                try {
+                  const d = new Date(timeStr);
+                  if (!isNaN(d.getTime())) {
+                    displayDate = d.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+                  }
+                } catch {
+                  displayDate = 'Completed';
+                }
+              }
 
               return (
                 <tr key={email.id} className="hover:bg-[#FCFCFC] transition-colors">

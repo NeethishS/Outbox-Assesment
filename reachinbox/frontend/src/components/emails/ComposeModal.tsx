@@ -28,25 +28,43 @@ export function ComposeModal({ isOpen, onClose, onSchedule }: ComposeModalProps)
 
   if (!isOpen) return null;
 
-  const parseEmailFile = (text: string, name: string) => {
-    setParseError(null);
+  const [manualEmails, setManualEmails] = useState<string>('');
+
+  const parseTextToEmails = (text: string) => {
     const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
     const matches = text.match(emailRegex) || [];
+    return Array.from(new Set(matches.map(e => e.toLowerCase())));
+  };
 
-    if (matches.length === 0) {
+  const updateAllRecipients = (fileList: string[], manualText: string) => {
+    const manualList = parseTextToEmails(manualText);
+    const combined = Array.from(new Set([...fileList, ...manualList]));
+    setRecipients(combined);
+  };
+
+  const parseEmailFile = (text: string, name: string) => {
+    setParseError(null);
+    const fileList = parseTextToEmails(text);
+
+    if (fileList.length === 0) {
       setParseError('No valid email addresses were found in the uploaded file.');
-      setRecipients([]);
       setFileName(name);
-      setDuplicateCount(0);
       return;
     }
 
-    const uniqueEmails = Array.from(new Set(matches.map(e => e.toLowerCase())));
-    const dupes = matches.length - uniqueEmails.length;
-
-    setRecipients(uniqueEmails);
-    setDuplicateCount(dupes);
     setFileName(name);
+    updateAllRecipients(fileList, manualEmails);
+  };
+
+  const handleManualEmailChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    const text = e.target.value;
+    setManualEmails(text);
+    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+    const fileList = parseTextToEmails(''); // parse from file if needed
+    // re-run combined parsing
+    const manualList = parseTextToEmails(text);
+    const fileMatches = fileName ? recipients.filter(r => !manualList.includes(r)) : [];
+    setRecipients(Array.from(new Set([...fileMatches, ...manualList])));
   };
 
   const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
@@ -141,7 +159,7 @@ export function ComposeModal({ isOpen, onClose, onSchedule }: ComposeModalProps)
 
           <div>
             <label className="block text-xs font-bold text-[#111111] mb-1.5">
-              Recipients CSV / TXT File
+              Recipients List (Upload CSV/TXT or Enter Emails)
             </label>
             <div className="border-2 border-dashed border-[#E5E7EB] rounded-xl p-4 text-center hover:border-[#00B956] transition-colors bg-[#FCFCFC]">
               <input
@@ -162,6 +180,19 @@ export function ComposeModal({ isOpen, onClose, onSchedule }: ComposeModalProps)
               </label>
             </div>
 
+            <div className="mt-3">
+              <label className="block text-[11px] font-semibold text-[#6B7280] mb-1">
+                Or enter/paste recipient email addresses manually:
+              </label>
+              <textarea
+                rows={2}
+                value={manualEmails}
+                onChange={handleManualEmailChange}
+                placeholder="e.g. test1@example.com, test2@example.com"
+                className="w-full px-3 py-2 rounded-xl border border-[#E5E7EB] text-xs text-[#111111] focus:outline-none focus:ring-2 focus:ring-[#00B956] resize-none"
+              />
+            </div>
+
             {parseError && (
               <p className="mt-2 text-xs text-[#DC2626] flex items-center gap-1">
                 <AlertCircle className="w-3.5 h-3.5" />
@@ -169,16 +200,21 @@ export function ComposeModal({ isOpen, onClose, onSchedule }: ComposeModalProps)
               </p>
             )}
 
-            {recipients.length > 0 && (
+            {recipients.length > 0 ? (
               <div className="mt-2.5 p-3 bg-[#E8F7EF] border border-[#00B956]/30 rounded-xl text-xs text-[#00B956] font-medium flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-[#00B956]" />
                   <span>
-                    <strong>{recipients.length} valid email addresses detected</strong>
+                    <strong>{recipients.length} valid email address{recipients.length > 1 ? 'es' : ''} detected</strong>
                     {duplicateCount > 0 && ` (${duplicateCount} duplicate addresses ignored)`}
                   </span>
                 </div>
               </div>
+            ) : (
+              <p className="mt-2 text-[11px] text-[#DC2626] font-medium flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5" />
+                Please upload a file or enter at least 1 valid email address to enable scheduling.
+              </p>
             )}
           </div>
 

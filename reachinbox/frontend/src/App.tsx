@@ -60,6 +60,9 @@ export default function App() {
 
   // Initial Auth Check
   useEffect(() => {
+    if (window.location.search.includes('auth_success=true')) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
     authService.getCurrentUser().then(u => {
       setUser(u);
       setAuthChecking(false);
@@ -88,7 +91,7 @@ export default function App() {
       setSentEmails(data);
     } catch (err) {
       setSentError(err instanceof Error ? err.message : 'Failed to fetch sent emails');
-    } fontally: {
+    } finally {
       setSentLoading(false);
     }
   }, []);
@@ -168,10 +171,14 @@ export default function App() {
   };
 
   const handleScheduleSubmit = async (payload: ScheduleEmailPayload) => {
-    const result = await emailService.scheduleEmails(payload);
-    addToast(`Successfully scheduled ${result.count} email job${result.count === 1 ? '' : 's'}.`, 'success');
-    loadScheduledEmails();
-    loadQueueStats();
+    try {
+      const result = await emailService.scheduleEmails(payload);
+      addToast(`Successfully scheduled ${result.count} email job${result.count === 1 ? '' : 's'}.`, 'success');
+      loadScheduledEmails();
+      loadQueueStats();
+    } catch (err: any) {
+      addToast(err?.message || 'Failed to schedule emails', 'error');
+    }
   };
 
   const handleCancelEmail = async (id: string) => {
