@@ -3,7 +3,7 @@ services:
     name: reachinbox-backend-api
     env: node
     rootDir: reachinbox/backend
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --include=dev && npm run build
     startCommand: npm start
     plan: free
     envVars:
