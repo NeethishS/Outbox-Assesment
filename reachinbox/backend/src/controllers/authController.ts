@@ -3,9 +3,19 @@ import { prisma } from '../config/prisma';
 
 const frontendUrl = process.env.FRONTEND_URL || 'https://outbox-assesment.vercel.app';
 
+const getGoogleRedirectUri = (): string => {
+  if (process.env.GOOGLE_CALLBACK_URL && process.env.GOOGLE_CALLBACK_URL.includes('onrender.com')) {
+    return process.env.GOOGLE_CALLBACK_URL;
+  }
+  if (process.env.NODE_ENV === 'production' || process.env.RENDER || process.env.FRONTEND_URL?.includes('vercel.app')) {
+    return 'https://reachinbox-backend-api-tceq.onrender.com/auth/google/callback';
+  }
+  return process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5000/auth/google/callback';
+};
+
 export const initiateGoogleOAuth = async (_req: Request, res: Response): Promise<void> => {
   const clientId = process.env.GOOGLE_CLIENT_ID;
-  const redirectUri = process.env.GOOGLE_CALLBACK_URL || 'https://reachinbox-backend-api-tceq.onrender.com/auth/google/callback';
+  const redirectUri = getGoogleRedirectUri();
 
   if (!clientId || clientId === 'your_google_client_id') {
     console.log('[Google OAuth] Credentials unconfigured. Redirecting with auth_error.');
@@ -22,7 +32,7 @@ export const handleGoogleCallback = async (req: Request, res: Response): Promise
   const { code } = req.query;
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const redirectUri = process.env.GOOGLE_CALLBACK_URL || 'https://reachinbox-backend-api-tceq.onrender.com/auth/google/callback';
+  const redirectUri = getGoogleRedirectUri();
 
   if (!code || typeof code !== 'string' || !clientId || !clientSecret) {
     res.redirect(`${frontendUrl}?auth_error=missing_code`);
