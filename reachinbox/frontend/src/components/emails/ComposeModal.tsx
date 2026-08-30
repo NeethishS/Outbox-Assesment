@@ -1,5 +1,5 @@
-import { useState, ChangeEvent, FormEvent } from 'react';
-import { X, Upload, CheckCircle2, AlertCircle, Clock, Shield, Sparkles } from 'lucide-react';
+import { useState, useMemo, ChangeEvent, FormEvent } from 'react';
+import { X, Upload, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
 import { ScheduleEmailPayload } from '../../types';
 
 interface ComposeModalProps {
@@ -18,56 +18,30 @@ export function ComposeModal({ isOpen, onClose, onSchedule }: ComposeModalProps)
   const [delaySeconds, setDelaySeconds] = useState<number>(60);
   const [hourlyLimit, setHourlyLimit] = useState<number>(50);
 
-  const [recipients, setRecipients] = useState<string[]>([]);
+  const [fileRecipients, setFileRecipients] = useState<string[]>([]);
   const [fileName, setFileName] = useState<string>('');
-  const [duplicateCount, setDuplicateCount] = useState<number>(0);
+  const [manualEmailsText, setManualEmailsText] = useState<string>('');
   const [parseError, setParseError] = useState<string | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  if (!isOpen) return null;
-
-  const [manualEmails, setManualEmails] = useState<string>('');
-
-  const parseTextToEmails = (text: string) => {
+  const parseTextToEmails = (text: string): string[] => {
+    if (!text.trim()) return [];
     const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
     const matches = text.match(emailRegex) || [];
     return Array.from(new Set(matches.map(e => e.toLowerCase())));
   };
 
-  const updateAllRecipients = (fileList: string[], manualText: string) => {
-    const manualList = parseTextToEmails(manualText);
-    const combined = Array.from(new Set([...fileList, ...manualList]));
-    setRecipients(combined);
-  };
+  const recipients = useMemo(() => {
+    const manualList = parseTextToEmails(manualEmailsText);
+    return Array.from(new Set([...fileRecipients, ...manualList]));
+  }, [fileRecipients, manualEmailsText]);
 
-  const parseEmailFile = (text: string, name: string) => {
-    setParseError(null);
-    const fileList = parseTextToEmails(text);
-
-    if (fileList.length === 0) {
-      setParseError('No valid email addresses were found in the uploaded file.');
-      setFileName(name);
-      return;
-    }
-
-    setFileName(name);
-    updateAllRecipients(fileList, manualEmails);
-  };
-
-  const handleManualEmailChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    const text = e.target.value;
-    setManualEmails(text);
-    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
-    const fileList = parseTextToEmails(''); // parse from file if needed
-    // re-run combined parsing
-    const manualList = parseTextToEmails(text);
-    const fileMatches = fileName ? recipients.filter(r => !manualList.includes(r)) : [];
-    setRecipients(Array.from(new Set([...fileMatches, ...manualList])));
-  };
+  if (!isOpen) return null;
 
   const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    setParseError(null);
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -78,8 +52,16 @@ export function ComposeModal({ isOpen, onClose, onSchedule }: ComposeModalProps)
 
     const reader = new FileReader();
     reader.onload = event => {
-      const content = event.target?.result as string;
-      parseEmailFile(content, file.name);
+      const content = (event.target?.result as string) || '';
+      const extracted = parseTextToEmails(content);
+      if (extracted.length === 0) {
+        setParseError('No valid email addresses were found in the uploaded file.');
+        setFileRecipients([]);
+        setFileName(file.name);
+        return;
+      }
+      setFileRecipients(extracted);
+      setFileName(file.name);
     };
     reader.onerror = () => {
       setParseError('Failed to read the uploaded file.');
@@ -92,7 +74,7 @@ export function ComposeModal({ isOpen, onClose, onSchedule }: ComposeModalProps)
     setFormError(null);
 
     if (recipients.length === 0) {
-      setFormError('Please upload a file containing at least one valid recipient email address.');
+      setFormError('Please upload a file or enter at least one valid recipient email address.');
       return;
     }
     if (!subject.trim()) {
@@ -113,17 +95,18 @@ export function ComposeModal({ isOpen, onClose, onSchedule }: ComposeModalProps)
     try {
       await onSchedule({
         recipients,
-        subject,
-        body,
+        subject: subject.trim(),
+        body: body.trim(),
         startTime: new Date(startTime).toISOString(),
         delaySeconds: Number(delaySeconds),
         hourlyLimit: Number(hourlyLimit),
       });
 
-      // Reset form
+      // Reset form on success
       setSubject('');
       setBody('');
-      setRecipients([]);
+      setFileRecipients([]);
+      setManualEmailsText('');
       setFileName('');
       onClose();
     } catch (err) {
@@ -186,8 +169,8 @@ export function ComposeModal({ isOpen, onClose, onSchedule }: ComposeModalProps)
               </label>
               <textarea
                 rows={2}
-                value={manualEmails}
-                onChange={handleManualEmailChange}
+                value={manualEmailsText}
+                onChange={e => setManualEmailsText(e.target.value)}
                 placeholder="e.g. test1@example.com, test2@example.com"
                 className="w-full px-3 py-2 rounded-xl border border-[#E5E7EB] text-xs text-[#111111] focus:outline-none focus:ring-2 focus:ring-[#00B956] resize-none"
               />
@@ -206,7 +189,6 @@ export function ComposeModal({ isOpen, onClose, onSchedule }: ComposeModalProps)
                   <CheckCircle2 className="w-4 h-4 text-[#00B956]" />
                   <span>
                     <strong>{recipients.length} valid email address{recipients.length > 1 ? 'es' : ''} detected</strong>
-                    {duplicateCount > 0 && ` (${duplicateCount} duplicate addresses ignored)`}
                   </span>
                 </div>
               </div>
@@ -295,32 +277,31 @@ export function ComposeModal({ isOpen, onClose, onSchedule }: ComposeModalProps)
               </div>
             </div>
           </div>
-        </form>
 
-        <div className="px-6 py-4 border-t border-[#E5E7EB] bg-[#FCFCFC] flex items-center justify-end gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2.5 rounded-xl text-xs font-semibold text-[#6B7280] hover:bg-[#F5F7F6]"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={submitting || recipients.length === 0}
-            className="px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-[#00B956] hover:bg-[#009E49] disabled:opacity-50 transition-all shadow-sm flex items-center gap-2"
-          >
-            {submitting ? (
-              <>
-                <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Scheduling Jobs...</span>
-              </>
-            ) : (
-              <span>Schedule {recipients.length > 0 ? `${recipients.length} Emails` : 'Emails'}</span>
-            )}
-          </button>
-        </div>
+          <div className="pt-2 flex items-center justify-end gap-3 border-t border-[#E5E7EB]">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2.5 rounded-xl text-xs font-semibold text-[#6B7280] hover:bg-[#F5F7F6]"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting || recipients.length === 0}
+              className="px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-[#00B956] hover:bg-[#009E49] disabled:opacity-50 transition-all shadow-sm flex items-center gap-2"
+            >
+              {submitting ? (
+                <>
+                  <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Scheduling Jobs...</span>
+                </>
+              ) : (
+                <span>Schedule {recipients.length > 0 ? `${recipients.length} Email${recipients.length > 1 ? 's' : ''}` : 'Emails'}</span>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
