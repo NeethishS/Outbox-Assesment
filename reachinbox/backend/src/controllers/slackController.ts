@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 import { prisma } from '../config/prisma';
 
-const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+const frontendUrl = process.env.FRONTEND_URL || 'https://outbox-assesment.vercel.app';
 
 export const initiateSlackOAuth = (_req: Request, res: Response): void => {
   const clientId = process.env.SLACK_CLIENT_ID;
-  const redirectUri = process.env.SLACK_REDIRECT_URI || 'http://localhost:5000/auth/slack/callback';
+  const redirectUri = process.env.SLACK_REDIRECT_URI || 'https://reachinbox-backend-api-tceq.onrender.com/auth/slack/callback';
 
   if (!clientId || clientId === 'PASTE_SLACK_CLIENT_ID' || clientId === 'your_slack_client_id') {
     res.json({
@@ -25,7 +25,7 @@ export const handleSlackCallback = async (req: Request, res: Response): Promise<
   const { code } = req.query;
   const clientId = process.env.SLACK_CLIENT_ID;
   const clientSecret = process.env.SLACK_CLIENT_SECRET;
-  const redirectUri = process.env.SLACK_REDIRECT_URI || 'http://localhost:5000/auth/slack/callback';
+  const redirectUri = process.env.SLACK_REDIRECT_URI || 'https://reachinbox-backend-api-tceq.onrender.com/auth/slack/callback';
   const userId = (req.session as any)?.user?.id || 'usr_demo_123';
 
   if (!code || typeof code !== 'string' || !clientId || !clientSecret) {
