@@ -1,5 +1,7 @@
 # ReachInbox.ai — Full-Stack Email Job Scheduler Platform
 
+**DEMO VIDEO**: https://drive.google.com/file/d/1drk5sIF-DLO7vPY9SjDVLR4brK9_iYRn/view?usp=sharing
+
 High-precision cold email job scheduling, queue management, and rate-limiting platform built for scale with Node.js, TypeScript, Express.js, PostgreSQL, Upstash Redis, BullMQ, Nodemailer (Ethereal SMTP), Elasticsearch, React.js, and Tailwind CSS.
 
 ---
