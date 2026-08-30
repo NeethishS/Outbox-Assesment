@@ -9,6 +9,11 @@ export const authService = {
     window.location.href = googleOAuthUrl;
   },
 
+  async loginWithDemo(): Promise<void> {
+    const demoAuthUrl = `${API_BASE_URL.replace(/\/api\/?$/, '')}/auth/demo`;
+    window.location.href = demoAuthUrl;
+  },
+
   async getCurrentUser(): Promise<User | null> {
     try {
       const data = await apiRequest<any>('/api/auth/me');

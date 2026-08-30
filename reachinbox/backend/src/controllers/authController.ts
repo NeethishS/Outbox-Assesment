@@ -104,6 +104,40 @@ export const handleGoogleCallback = async (req: Request, res: Response): Promise
   }
 };
 
+export const handleDemoLogin = async (req: Request, res: Response): Promise<void> => {
+  try {
+    let demoUser = await prisma.user.findFirst({
+      where: { email: 'demo@reachinbox.ai' }
+    });
+
+    if (!demoUser) {
+      demoUser = await prisma.user.create({
+        data: {
+          email: 'demo@reachinbox.ai',
+          name: 'ReachInbox Demo User',
+          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120',
+          googleId: 'demo_google_id_123'
+        }
+      });
+    }
+
+    (req.session as any).user = {
+      id: demoUser.id,
+      email: demoUser.email,
+      name: demoUser.name,
+      avatarUrl: demoUser.avatarUrl
+    };
+
+    req.session.save(err => {
+      if (err) console.error('[Demo Session Save Error]', err);
+      res.redirect(`${frontendUrl}?auth_success=true`);
+    });
+  } catch (err: any) {
+    console.error('[Demo Auth Error]', err.message);
+    res.redirect(`${frontendUrl}?auth_error=demo_failed`);
+  }
+};
+
 export const getCurrentUser = (req: Request, res: Response): void => {
   const sessionUser = (req.session as any)?.user;
   if (sessionUser) {

@@ -22,6 +22,17 @@ export function LoginScreen({}: LoginScreenProps) {
     }
   };
 
+  const handleDemoLogin = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await authService.loginWithDemo();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Demo sign-in failed. Please try again.');
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#FCFCFC] flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
@@ -38,13 +49,13 @@ export function LoginScreen({}: LoginScreenProps) {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-6 shadow-sm border border-[#E5E7EB] rounded-2xl sm:px-10">
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div>
               <h3 className="text-xl font-bold text-[#111111] text-center">
                 Welcome to your workspace
               </h3>
               <p className="text-xs text-[#6B7280] text-center mt-1">
-                Sign in with your Google account to access your email queues
+                Sign in to access your email job scheduling dashboard
               </p>
             </div>
 
@@ -77,7 +88,25 @@ export function LoginScreen({}: LoginScreenProps) {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                 />
               </svg>
-              <span>{loading ? 'Redirecting to Google OAuth...' : 'Sign in with Google'}</span>
+              <span>{loading ? 'Connecting...' : 'Sign in with Google'}</span>
+            </button>
+
+            <div className="relative my-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-[#E5E7EB]" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-[#6B7280] font-medium">Or</span>
+              </div>
+            </div>
+
+            <button
+              onClick={handleDemoLogin}
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-white bg-[#00B956] hover:bg-[#009E49] transition-all shadow-sm disabled:opacity-60 cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>Continue with Instant Demo Account</span>
             </button>
           </div>
 
