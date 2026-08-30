@@ -1,7 +1,7 @@
 import { apiRequest } from './api';
 import { SlackConnection } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://reachinbox-backend-api-tceq.onrender.com';
 
 export const slackService = {
   async getStatus(): Promise<SlackConnection> {
