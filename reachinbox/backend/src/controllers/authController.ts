@@ -17,6 +17,8 @@ export const initiateGoogleOAuth = async (_req: Request, res: Response): Promise
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const redirectUri = getGoogleRedirectUri();
 
+  console.log(`[Google OAuth Initiate] ClientID=${clientId} | RedirectURI=${redirectUri}`);
+
   if (!clientId || clientId === 'your_google_client_id') {
     console.log('[Google OAuth] Credentials unconfigured. Redirecting with auth_error.');
     res.redirect(`${frontendUrl}?auth_error=unconfigured_credentials`);
