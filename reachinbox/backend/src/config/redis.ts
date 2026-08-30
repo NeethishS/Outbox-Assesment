@@ -1,6 +1,7 @@
 import Redis, { RedisOptions } from 'ioredis';
 
-const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+let redisUrl = (process.env.REDIS_URL || 'redis://localhost:6379').trim();
+redisUrl = redisUrl.replace(/^["']|["']$/g, '');
 
 export function getRedisOptions(): RedisOptions {
   return {
