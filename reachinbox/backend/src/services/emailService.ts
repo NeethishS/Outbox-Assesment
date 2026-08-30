@@ -107,7 +107,7 @@ export async function scheduleEmails(input: ScheduleEmailInput) {
       },
       opts: {
         delay: delayMs,
-        jobId: `job_${job.id}`
+        jobId: `job_${job.id}_${Date.now()}`
       }
     };
   });
