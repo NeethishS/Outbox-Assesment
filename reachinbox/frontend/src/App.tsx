@@ -63,11 +63,15 @@ export default function App() {
     if (window.location.search.includes('auth_success=true')) {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
+    if (window.location.search.includes('slack_connected=true')) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+      addToast('Successfully connected Slack workspace for rate-limit notifications!', 'success');
+    }
     authService.getCurrentUser().then(u => {
       setUser(u);
       setAuthChecking(false);
     });
-  }, []);
+  }, [addToast]);
 
   // Fetch Data
   const loadScheduledEmails = useCallback(async () => {
