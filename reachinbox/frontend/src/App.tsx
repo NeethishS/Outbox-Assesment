@@ -67,6 +67,9 @@ export default function App() {
       window.history.replaceState({}, document.title, window.location.pathname);
       addToast('Successfully connected Slack workspace for rate-limit notifications!', 'success');
     }
+    if (window.location.search.includes('auth_error=')) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
     authService.getCurrentUser().then(u => {
       setUser(u);
       setAuthChecking(false);

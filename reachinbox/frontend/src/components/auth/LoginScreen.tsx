@@ -9,7 +9,15 @@ interface LoginScreenProps {
 
 export function LoginScreen({}: LoginScreenProps) {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(() => {
+    if (window.location.search.includes('auth_error=unconfigured_credentials')) {
+      return 'Google OAuth credentials (GOOGLE_CLIENT_ID) are not configured in Render environment variables. Click "Continue with Instant Demo Account" below to enter your workspace!';
+    }
+    if (window.location.search.includes('auth_error=')) {
+      return 'Google sign-in error occurred. Please click "Continue with Instant Demo Account" below.';
+    }
+    return null;
+  });
 
   const handleGoogleLogin = async () => {
     setLoading(true);
